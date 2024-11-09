@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roblox ScriptHub</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>Roblox ScriptHub</h1>
+        <p>Browse and view Roblox scripts!</p>
+    </header>
+
+    <div class="container">
+        <input type="text" id="search" placeholder="Search for a script..." oninput="searchScripts()">
+
+        <h2>Browse by Category</h2>
+        <div class="categories">
+            <button onclick="filterCategory('Admin')">Admin</button>
+            <button onclick="filterCategory('Gameplay')">Gameplay</button>
+            <button onclick="filterCategory('UI')">UI</button>
+            <button onclick="filterCategory('Fun')">Fun</button>
+            <button onclick="filterCategory('Other')">Other</button>
+        </div>
+
+        <h2>Scripts</h2>
+        <div class="scripts-list" id="scripts-list">
+            <!-- Script items will be dynamically added here -->
+        </div>
+    </div>
+
+    <script src="scripts.js"></script>
+</body>
+</html>
