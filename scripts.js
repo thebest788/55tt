@@ -1,62 +1,112 @@
-const allScripts = [
-    { title: 'God Mode Script', description: 'Makes your character invincible.', category: 'Gameplay', script: 'your-god-mode-script-here', url: '#' },
-    { title: 'Auto Farm Script', description: 'Automatically farms for you.', category: 'Gameplay', script: 'auto-farm-script-here', url: '#' },
-    { title: 'Admin Commands', description: 'Gives you admin powers.', category: 'Admin', script: 'admin-commands-script-here', url: '#' },
-    { title: 'Flying Script', description: 'Fly in the game world.', category: 'Fun', script: 'flying-script-here', url: '#' },
-    { title: 'GUI Admin Panel', description: 'Custom admin GUI panel.', category: 'UI', script: 'gui-admin-panel-script-here', url: '#' },
-    // Add more scripts as necessary
-];
+document.addEventListener('DOMContentLoaded', () => {
+  const searchForm = document.getElementById('search-form');
+  const resultsDiv = document.getElementById('results');
+  const loadMoreButton = document.getElementById('load-more');
+  const darkModeButton = document.getElementById('dark-mode-toggle');
 
-function renderScripts(scripts) {
-    const scriptList = document.getElementById('script-list');
-    scriptList.innerHTML = '';
+  let currentPage = 1;
 
-    scripts.forEach(script => {
-        const scriptItem = document.createElement('div');
-        scriptItem.classList.add('script-item');
-        scriptItem.innerHTML = `<h3>${script.title}</h3><p>${script.description}</p>`;
-        scriptItem.addEventListener('click', () => showScriptDetails(script));
-        scriptList.appendChild(scriptItem);
-    });
-}
+  async function fetchScripts(page = 1) {
+    const searchInput = document.getElementById('search-input').value;
+    const modeSelect = document.getElementById('mode-select').value;
 
-function searchScripts() {
-    const searchTerm = document.getElementById('search').value.toLowerCase();
-    const filteredScripts = allScripts.filter(script => 
-        script.title.toLowerCase().includes(searchTerm) || script.description.toLowerCase().includes(searchTerm)
-    );
-    renderScripts(filteredScripts);
-}
+    try {
+      const response = await fetch(`https://scriptblox-api-proxy.vercel.app/api/search?q=${encodeURIComponent(searchInput)}&mode=${encodeURIComponent(modeSelect)}&page=${page}`);
+      const data = await response.json();
 
-function showScriptDetails(script) {
-    const modal = document.getElementById('script-modal');
-    const scriptContent = document.getElementById('script-content');
-    scriptContent.textContent = script.script;
+      if (page === 1) {
+        resultsDiv.innerHTML = '';
+      }
 
-    const copyButton = document.getElementById('copy-script');
-    const executeButton = document.getElementById('execute-script');
-
-    // Copy Script to Clipboard
-    copyButton.onclick = () => {
-        navigator.clipboard.writeText(script.script).then(() => {
-            alert('Script copied to clipboard!');
+      if (data?.result?.scripts?.length) {
+        data.result.scripts.forEach(script => {
+          const scriptDiv = createScriptCard(script);
+          resultsDiv.appendChild(scriptDiv);
         });
-    };
 
-    // Execute the Script (in Roblox, this will not actually execute, but you can integrate with ScriptBlox API or other solutions here)
-    executeButton.onclick = () => {
-        alert('Executing script is not possible from here directly. This is just a mock-up.');
-    };
+        currentPage = page;
+        loadMoreButton.style.display = currentPage < data.result.totalPages ? 'block' : 'none';
+      } else {
+        resultsDiv.innerHTML = '<p>No scripts found.</p>';
+        loadMoreButton.style.display = 'none';
+      }
+    } catch (error) {
+      console.error('Error fetching scripts:', error);
+      resultsDiv.innerHTML = '<p>An error occurred while fetching scripts.</p>';
+      loadMoreButton.style.display = 'none';
+    }
+  }
 
-    modal.style.display = 'flex';
-}
+  function createScriptCard(script) {
+    const scriptDiv = document.createElement('div');
+    scriptDiv.classList.add('script-card');
 
-// Close the Modal
-const closeModal = document.getElementsByClassName('close')[0];
-closeModal.onclick = () => {
-    const modal = document.getElementById('script-modal');
-    modal.style.display = 'none';
-};
+    const imageSrc = script.game.imageUrl ? `https://scriptblox.com${script.game.imageUrl}` : './404.jpg';
+    const keyLink = script.key ? `<a href="${script.keyLink}" target="_blank" rel="noopener noreferrer">Get Key</a>` : 'No';
 
-// Initial render of all scripts
-renderScripts(allScripts);
+    scriptDiv.innerHTML = `
+      <h3 class="script-title"><a href="https://scriptblox-api-proxy.vercel.app/script/${script.slug}" target="_blank" rel="noopener noreferrer">${script.title}</a></h3>
+      <img src="${imageSrc}" alt="Game Image" onerror="this.src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFV_3fgSgibO5UnL_ydawji9oIAUr6NblpEw&s';" />
+      <div class="script-content-container">
+        <div class="script-details">
+          <p>Game: ${script.game.name}</p>
+          <p>Script Type: ${script.scriptType}</p>
+          <p>Views: ${script.views}</p>
+          <p>Created At: ${new Date(script.createdAt).toLocaleString()}</p>
+          <p>Updated At: ${new Date(script.updatedAt).toLocaleString()}</p>
+          <p>Verified: ${script.verified ? 'Yes' : 'No'}</p>
+          <p>Key Required: ${keyLink}</p>
+        </div>
+        <div class="script-text-container">
+          <p>Script: <span class="script-content">${script.script}</span></p>
+          <button class="copy-button">Copy</button>
+        </div>
+      </div>
+    `;
+
+    const copyButton = scriptDiv.querySelector('.copy-button');
+    copyButton.addEventListener('click', () => handleCopyButtonClick(scriptDiv));
+
+    return scriptDiv;
+  }
+
+  function handleCopyButtonClick(scriptDiv) {
+    const scriptContent = scriptDiv.querySelector('.script-content').textContent;
+    navigator.clipboard.writeText(scriptContent)
+      .then(() => {
+        const copyButton = scriptDiv.querySelector('.copy-button');
+        copyButton.textContent = 'Copied!';
+        setTimeout(() => {
+          copyButton.textContent = 'Copy';
+        }, 2000);
+      })
+      .catch(err => console.error('Copy failed:', err));
+  }
+
+  searchForm.addEventListener('submit', (e) => {
+    e.preventDefault();
+    fetchScripts(1);
+  });
+
+  loadMoreButton.addEventListener('click', () => {
+    fetchScripts(currentPage + 1);
+  });
+
+  function toggleDarkMode() {
+    const isDarkMode = document.body.classList.toggle('dark-mode');
+    document.body.classList.toggle('light-mode', !isDarkMode);
+    localStorage.setItem('darkMode', isDarkMode ? 'true' : 'false');
+  }
+
+  if (darkModeButton) {
+    darkModeButton.addEventListener('click', toggleDarkMode);
+  }
+
+  const isDarkMode = localStorage.getItem('darkMode') === 'true';
+  if (isDarkMode) {
+    document.body.classList.add('dark-mode');
+  } else {
+    document.body.classList.add('light-mode');
+  }
+  fetchScripts(1);
+});
