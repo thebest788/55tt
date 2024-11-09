@@ -1,52 +1,62 @@
 const allScripts = [
-    { title: 'God Mode Script', description: 'Makes your character invincible in the game.', category: 'Gameplay', url: '#' },
-    { title: 'Auto Farm Script', description: 'Automatically farms in a Roblox game.', category: 'Gameplay', url: '#' },
-    { title: 'Admin Commands', description: 'Gives you admin powers in the game.', category: 'Admin', url: '#' },
-    { title: 'Flying Script', description: 'Allows you to fly around in the game world.', category: 'Fun', url: '#' },
-    { title: 'GUI Admin Panel', description: 'A custom admin control panel.', category: 'UI', url: '#' },
-    { title: 'Teleportation Script', description: 'Teleport to any player in the game.', category: 'Gameplay', url: '#' },
-    { title: 'Invisible Script', description: 'Makes your character invisible.', category: 'Gameplay', url: '#' },
-    { title: 'Chat Commands Script', description: 'Adds custom chat commands for your game.', category: 'Admin', url: '#' },
-    { title: 'Speed Hack', description: 'Increase your speed in the game world.', category: 'Gameplay', url: '#' },
-    { title: 'Infinite Jump Script', description: 'Allows you to jump infinitely.', category: 'Fun', url: '#' },
-    // Add more scripts as needed
+    { title: 'God Mode Script', description: 'Makes your character invincible.', category: 'Gameplay', script: 'your-god-mode-script-here', url: '#' },
+    { title: 'Auto Farm Script', description: 'Automatically farms for you.', category: 'Gameplay', script: 'auto-farm-script-here', url: '#' },
+    { title: 'Admin Commands', description: 'Gives you admin powers.', category: 'Admin', script: 'admin-commands-script-here', url: '#' },
+    { title: 'Flying Script', description: 'Fly in the game world.', category: 'Fun', script: 'flying-script-here', url: '#' },
+    { title: 'GUI Admin Panel', description: 'Custom admin GUI panel.', category: 'UI', script: 'gui-admin-panel-script-here', url: '#' },
+    // Add more scripts as necessary
 ];
 
 function renderScripts(scripts) {
-    const scriptsList = document.getElementById('scripts-list');
-    scriptsList.innerHTML = ''; // Clear the current list
+    const scriptList = document.getElementById('script-list');
+    scriptList.innerHTML = '';
 
     scripts.forEach(script => {
         const scriptItem = document.createElement('div');
         scriptItem.classList.add('script-item');
-
-        const title = document.createElement('h3');
-        const link = document.createElement('a');
-        link.href = script.url;
-        link.textContent = script.title;
-        title.appendChild(link);
-
-        const description = document.createElement('p');
-        description.textContent = script.description;
-
-        scriptItem.appendChild(title);
-        scriptItem.appendChild(description);
-        scriptsList.appendChild(scriptItem);
+        scriptItem.innerHTML = `<h3>${script.title}</h3><p>${script.description}</p>`;
+        scriptItem.addEventListener('click', () => showScriptDetails(script));
+        scriptList.appendChild(scriptItem);
     });
 }
 
 function searchScripts() {
     const searchTerm = document.getElementById('search').value.toLowerCase();
-    const filteredScripts = allScripts.filter(script =>
+    const filteredScripts = allScripts.filter(script => 
         script.title.toLowerCase().includes(searchTerm) || script.description.toLowerCase().includes(searchTerm)
     );
     renderScripts(filteredScripts);
 }
 
-function filterCategory(category) {
-    const filteredScripts = allScripts.filter(script => script.category === category);
-    renderScripts(filteredScripts);
+function showScriptDetails(script) {
+    const modal = document.getElementById('script-modal');
+    const scriptContent = document.getElementById('script-content');
+    scriptContent.textContent = script.script;
+
+    const copyButton = document.getElementById('copy-script');
+    const executeButton = document.getElementById('execute-script');
+
+    // Copy Script to Clipboard
+    copyButton.onclick = () => {
+        navigator.clipboard.writeText(script.script).then(() => {
+            alert('Script copied to clipboard!');
+        });
+    };
+
+    // Execute the Script (in Roblox, this will not actually execute, but you can integrate with ScriptBlox API or other solutions here)
+    executeButton.onclick = () => {
+        alert('Executing script is not possible from here directly. This is just a mock-up.');
+    };
+
+    modal.style.display = 'flex';
 }
+
+// Close the Modal
+const closeModal = document.getElementsByClassName('close')[0];
+closeModal.onclick = () => {
+    const modal = document.getElementById('script-modal');
+    modal.style.display = 'none';
+};
 
 // Initial render of all scripts
 renderScripts(allScripts);
