@@ -9,18 +9,18 @@
 <body>
   <header class="header">
     <h1 class="header-title">Script Searcher</h1>
-    <button class="button dark-mode-button" id="dark-mode-toggle">Dark Mode</button>
+    <button class="button dark-mode-button" id="dark-mode-toggle" aria-label="Toggle Dark Mode">🌙</button>
   </header>
   <main class="container">
-    <section class="section search-section">
+    <section class="search-section">
       <form id="search-form" class="search-form">
         <div class="form-group">
           <label class="label" for="search-input">Search Scripts:</label>
-          <input class="input" type="text" id="search-input" placeholder="Search Script...">
+          <input class="input" type="text" id="search-input" placeholder="Search Script..." aria-label="Search Scripts">
         </div>
         <div class="form-group">
           <label class="label" for="mode-select">Script Mode:</label>
-          <select class="select" id="mode-select">
+          <select class="select" id="mode-select" aria-label="Select Script Mode">
             <option value="free">Free</option>
             <option value="paid">Paid</option>
           </select>
@@ -28,13 +28,13 @@
         <button class="button search-button" type="submit">Search</button>
       </form>
     </section>
-    <section class="section results-section">
+    <section class="results-section">
       <div class="results" id="results"></div>
       <button class="button load-more-button" id="load-more">Load More</button>
     </section>
   </main>
   <footer class="footer">
-    <p>&copy; 2023 YellowGreg All rights reserved. | You can use it but give credit.</p>
+    <p>&copy; 2023 YellowGreg. All rights reserved. | You can use it but give credit.</p>
   </footer>
   <script src="script.js"></script>
 </body>
