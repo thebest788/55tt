@@ -1,112 +1,82 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const searchForm = document.getElementById('search-form');
-  const resultsDiv = document.getElementById('results');
-  const loadMoreButton = document.getElementById('load-more');
-  const darkModeButton = document.getElementById('dark-mode-toggle');
+// Dark Mode Toggle
+const darkModeButton = document.getElementById('dark-mode-toggle');
+const body = document.body;
 
-  let currentPage = 1;
+darkModeButton.addEventListener('click', () => {
+  body.classList.toggle('dark-mode');
+  // Toggle button text
+  darkModeButton.innerHTML = body.classList.contains('dark-mode') ? '🌞' : '🌙';
+});
 
-  async function fetchScripts(page = 1) {
-    const searchInput = document.getElementById('search-input').value;
-    const modeSelect = document.getElementById('mode-select').value;
+// Search Form Logic
+const searchForm = document.getElementById('search-form');
+const searchInput = document.getElementById('search-input');
+const categorySelect = document.getElementById('category-select');
+const resultsContainer = document.getElementById('results');
+const loadMoreButton = document.getElementById('load-more');
 
-    try {
-      const response = await fetch(`https://scriptblox-api-proxy.vercel.app/api/search?q=${encodeURIComponent(searchInput)}&mode=${encodeURIComponent(modeSelect)}&page=${page}`);
-      const data = await response.json();
+let currentPage = 1;
+let totalResults = 0;
 
-      if (page === 1) {
-        resultsDiv.innerHTML = '';
-      }
+// Function to fetch scripts from API (mocked API for this example)
+async function fetchScripts(query = '', category = 'all', page = 1) {
+  // Replace with actual API call to ScriptBlox API
+  const apiUrl = `https://api.scriptblox.com/search?s=${query}&category=${category}&page=${page}`;
+  
+  // Mock API response
+  const mockApiResponse = {
+    scripts: [
+      { title: 'God Mode Script', description: 'Makes you invincible in the game.', id: '1' },
+      { title: 'Auto Farm Script', description: 'Automatically farms resources for you.', id: '2' },
+      { title: 'Fly Script', description: 'Allows your character to fly in the game.', id: '3' }
+    ],
+    totalResults: 3
+  };
+  
+  // Simulate delay for API call
+  await new Promise(resolve => setTimeout(resolve, 500));
 
-      if (data?.result?.scripts?.length) {
-        data.result.scripts.forEach(script => {
-          const scriptDiv = createScriptCard(script);
-          resultsDiv.appendChild(scriptDiv);
-        });
+  return mockApiResponse;
+}
 
-        currentPage = page;
-        loadMoreButton.style.display = currentPage < data.result.totalPages ? 'block' : 'none';
-      } else {
-        resultsDiv.innerHTML = '<p>No scripts found.</p>';
-        loadMoreButton.style.display = 'none';
-      }
-    } catch (error) {
-      console.error('Error fetching scripts:', error);
-      resultsDiv.innerHTML = '<p>An error occurred while fetching scripts.</p>';
-      loadMoreButton.style.display = 'none';
-    }
-  }
-
-  function createScriptCard(script) {
-    const scriptDiv = document.createElement('div');
-    scriptDiv.classList.add('script-card');
-
-    const imageSrc = script.game.imageUrl ? `https://scriptblox.com${script.game.imageUrl}` : './404.jpg';
-    const keyLink = script.key ? `<a href="${script.keyLink}" target="_blank" rel="noopener noreferrer">Get Key</a>` : 'No';
-
-    scriptDiv.innerHTML = `
-      <h3 class="script-title"><a href="https://scriptblox-api-proxy.vercel.app/script/${script.slug}" target="_blank" rel="noopener noreferrer">${script.title}</a></h3>
-      <img src="${imageSrc}" alt="Game Image" onerror="this.src='https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTFV_3fgSgibO5UnL_ydawji9oIAUr6NblpEw&s';" />
-      <div class="script-content-container">
-        <div class="script-details">
-          <p>Game: ${script.game.name}</p>
-          <p>Script Type: ${script.scriptType}</p>
-          <p>Views: ${script.views}</p>
-          <p>Created At: ${new Date(script.createdAt).toLocaleString()}</p>
-          <p>Updated At: ${new Date(script.updatedAt).toLocaleString()}</p>
-          <p>Verified: ${script.verified ? 'Yes' : 'No'}</p>
-          <p>Key Required: ${keyLink}</p>
-        </div>
-        <div class="script-text-container">
-          <p>Script: <span class="script-content">${script.script}</span></p>
-          <button class="copy-button">Copy</button>
-        </div>
-      </div>
+// Display Scripts in the Results Section
+function displayScripts(scripts) {
+  scripts.forEach(script => {
+    const scriptElement = document.createElement('div');
+    scriptElement.classList.add('script');
+    scriptElement.innerHTML = `
+      <h3>${script.title}</h3>
+      <p>${script.description}</p>
+      <button class="button">View Script</button>
     `;
-
-    const copyButton = scriptDiv.querySelector('.copy-button');
-    copyButton.addEventListener('click', () => handleCopyButtonClick(scriptDiv));
-
-    return scriptDiv;
-  }
-
-  function handleCopyButtonClick(scriptDiv) {
-    const scriptContent = scriptDiv.querySelector('.script-content').textContent;
-    navigator.clipboard.writeText(scriptContent)
-      .then(() => {
-        const copyButton = scriptDiv.querySelector('.copy-button');
-        copyButton.textContent = 'Copied!';
-        setTimeout(() => {
-          copyButton.textContent = 'Copy';
-        }, 2000);
-      })
-      .catch(err => console.error('Copy failed:', err));
-  }
-
-  searchForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    fetchScripts(1);
+    resultsContainer.appendChild(scriptElement);
   });
+}
 
-  loadMoreButton.addEventListener('click', () => {
-    fetchScripts(currentPage + 1);
-  });
+// Handle Search Form Submission
+searchForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  
+  const query = searchInput.value;
+  const category = categorySelect.value;
+  
+  // Reset results and page number
+  resultsContainer.innerHTML = '';
+  currentPage = 1;
 
-  function toggleDarkMode() {
-    const isDarkMode = document.body.classList.toggle('dark-mode');
-    document.body.classList.toggle('light-mode', !isDarkMode);
-    localStorage.setItem('darkMode', isDarkMode ? 'true' : 'false');
+  const response = await fetchScripts(query, category, currentPage);
+  totalResults = response.totalResults;
+  displayScripts(response.scripts);
+});
+
+// Handle Load More Button Click
+loadMoreButton.addEventListener('click', async () => {
+  if (resultsContainer.children.length < totalResults) {
+    currentPage++;
+    const query = searchInput.value;
+    const category = categorySelect.value;
+    
+    const response = await fetchScripts(query, category, currentPage);
+    displayScripts(response.scripts);
   }
-
-  if (darkModeButton) {
-    darkModeButton.addEventListener('click', toggleDarkMode);
-  }
-
-  const isDarkMode = localStorage.getItem('darkMode') === 'true';
-  if (isDarkMode) {
-    document.body.classList.add('dark-mode');
-  } else {
-    document.body.classList.add('light-mode');
-  }
-  fetchScripts(1);
 });
